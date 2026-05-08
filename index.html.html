@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Big Al's Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a1628;
+  --navy-mid: #122040;
+  --navy-light: #1a2f55;
+  --gold: #c9a84c;
+  --gold-light: #e8c96a;
+  --gold-dim: #8a6f32;
+  --white: #f0f4ff;
+  --gray: #8898aa;
+  --success: #2ecc71;
+  --warning: #f39c12;
+  --danger: #e74c3c;
+  --info: #3498db;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--navy); color:var(--white); font-family:'Barlow',sans-serif; min-height:100vh; }
+
+/* HEADER */
+.header {
+  background:linear-gradient(135deg,var(--navy-mid),var(--navy));
+  border-bottom:2px solid var(--gold);
+  padding:14px 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:100;
+  box-shadow:0 4px 24px rgba(0,0,0,0.4);
+}
+.logo { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--gold); letter-spacing:2px; }
+.logo-sub { font-family:'Barlow Condensed',sans-serif; font-size:11px; color:var(--gray); letter-spacing:3px; text-transform:uppercase; }
+.header-right { display:flex; gap:12px; align-items:center; }
+.btn-add-header {
+  background:linear-gradient(135deg,var(--gold),var(--gold-dim));
+  color:var(--navy); border:none; border-radius:6px;
+  padding:8px 18px; font-family:'Barlow Condensed',sans-serif;
+  font-size:14px; font-weight:700; letter-spacing:1px;
+  text-transform:uppercase; cursor:pointer; transition:all 0.2s;
+}
+.btn-add-header:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(201,168,76,0.3); }
+
+/* STATS */
+.stats { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; padding:20px 24px 0; }
+.stat {
+  background:var(--navy-mid); border:1px solid var(--navy-light);
+  border-radius:10px; padding:14px 16px;
+  display:flex; align-items:center; gap:12px;
+  transition:border-color 0.2s;
+}
+.stat:hover { border-color:var(--gold-dim); }
+.stat-icon { font-size:24px; }
+.stat-num { font-family:'Bebas Neue',cursive; font-size:28px; color:var(--gold); line-height:1; }
+.stat-label { font-size:10px; color:var(--gray); text-transform:uppercase; letter-spacing:1px; }
+
+/* CONTROLS */
+.controls { padding:16px 24px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.filter-group { display:flex; gap:6px; flex-wrap:wrap; }
+.fbtn {
+  background:var(--navy-mid); border:1px solid var(--navy-light);
+  color:var(--gray); padding:7px 14px; border-radius:6px;
+  font-family:'Barlow Condensed',sans-serif; font-size:12px;
+  font-weight:600; letter-spacing:0.5px; cursor:pointer;
+  transition:all 0.2s; text-transform:uppercase;
+}
+.fbtn:hover, .fbtn.active { background:var(--gold); border-color:var(--gold); color:var(--navy); }
+.search {
+  flex:1; min-width:180px;
+  background:var(--navy-mid); border:1px solid var(--navy-light);
+  border-radius:8px; padding:8px 14px; color:var(--white);
+  font-family:'Barlow',sans-serif; font-size:13px;
+}
+.search:focus { outline:none; border-color:var(--gold); }
+
+/* TASK LIST */
+.task-container { padding:0 24px 40px; }
+.section-header {
+  font-family:'Barlow Condensed',sans-serif; font-size:11px;
+  font-weight:700; color:var(--gold); letter-spacing:2px;
+  text-transform:uppercase; padding:16px 0 8px;
+  border-bottom:1px solid var(--navy-light); margin-bottom:4px;
+  display:flex; align-items:center; gap:8px;
+}
+.task-row {
+  display:grid;
+  grid-template-columns:28px 1fr 110px 100px 90px 110px 100px;
+  align-items:center; gap:8px;
+  padding:9px 12px; border-radius:8px;
+  border:1px solid transparent;
+  transition:all 0.15s; cursor:pointer;
+  margin-bottom:2px;
+}
+.task-row:hover { background:rgba(255,255,255,0.03); border-color:var(--navy-light); }
+.task-row.completed { opacity:0.45; }
+.task-row.completed .task-name { text-decoration:line-through; color:var(--gray); }
+
+/* Checkbox */
+.cb-wrap { display:flex; align-items:center; justify-content:center; }
+.cb {
+  width:18px; height:18px; border-radius:4px;
+  border:2px solid var(--navy-light); background:transparent;
+  cursor:pointer; appearance:none; transition:all 0.2s;
+  position:relative; flex-shrink:0;
+}
+.cb:checked { background:var(--success); border-color:var(--success); }
+.cb:checked::after {
+  content:'✓'; position:absolute; top:-1px; left:2px;
+  font-size:13px; color:white; font-weight:bold;
+}
+.cb:hover { border-color:var(--gold); }
+
+.task-name { font-size:13px; font-weight:500; color:var(--white); }
+.task-notes { font-size:11px; color:var(--gray); margin-top:2px; }
+
+/* Badges */
+.badge {
+  display:inline-block; padding:2px 8px; border-radius:20px;
+  font-size:10px; font-weight:700;
+  font-family:'Barlow Condensed',sans-serif;
+  letter-spacing:0.5px; text-transform:uppercase;
+  white-space:nowrap;
+}
+.b-not-started { background:rgba(136,152,170,0.15); color:#8898aa; border:1px solid rgba(136,152,170,0.3); }
+.b-in-progress { background:rgba(243,156,18,0.15); color:#f39c12; border:1px solid rgba(243,156,18,0.3); }
+.b-complete { background:rgba(46,204,113,0.15); color:#2ecc71; border:1px solid rgba(46,204,113,0.3); }
+.b-on-hold { background:rgba(52,152,219,0.15); color:#3498db; border:1px solid rgba(52,152,219,0.3); }
+.b-critical { background:rgba(231,76,60,0.15); color:#e74c3c; border:1px solid rgba(231,76,60,0.3); }
+.b-high { background:rgba(243,156,18,0.15); color:#f39c12; border:1px solid rgba(243,156,18,0.3); }
+.b-medium { background:rgba(52,152,219,0.15); color:#3498db; border:1px solid rgba(52,152,219,0.3); }
+.b-low { background:rgba(136,152,170,0.15); color:#8898aa; border:1px solid rgba(136,152,170,0.3); }
+.b-bigals { background:rgba(201,168,76,0.15); color:var(--gold); border:1px solid rgba(201,168,76,0.3); }
+.b-melaleuca { background:rgba(46,204,113,0.15); color:#2ecc71; border:1px solid rgba(46,204,113,0.3); }
+.b-family { background:rgba(155,89,182,0.15); color:#9b59b6; border:1px solid rgba(155,89,182,0.3); }
+
+.due { font-size:11px; color:var(--gray); white-space:nowrap; }
+.due-overdue { color:#e74c3c; font-weight:700; }
+.due-today { color:#f39c12; font-weight:700; }
+.due-soon { color:var(--gold); font-weight:600; }
+
+.owner-badge { font-size:11px; color:var(--gray); }
+
+/* MODAL */
+.overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.75); z-index:200;
+  align-items:center; justify-content:center; padding:20px;
+}
+.overlay.active { display:flex; }
+.modal {
+  background:var(--navy-mid); border:1px solid var(--gold-dim);
+  border-radius:16px; padding:28px; width:100%; max-width:500px;
+  max-height:90vh; overflow-y:auto;
+}
+.modal h3 { font-family:'Bebas Neue',cursive; font-size:26px; color:var(--gold); letter-spacing:2px; margin-bottom:20px; }
+.fg { margin-bottom:14px; }
+.fg label { display:block; font-size:11px; color:var(--gold); letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; }
+.fg input, .fg select, .fg textarea {
+  width:100%; background:rgba(255,255,255,0.05);
+  border:1px solid var(--navy-light); border-radius:8px;
+  padding:9px 12px; color:var(--white);
+  font-family:'Barlow',sans-serif; font-size:13px;
+}
+.fg select option { background:var(--navy-mid); }
+.fg input:focus, .fg select:focus, .fg textarea:focus { outline:none; border-color:var(--gold); }
+.fg textarea { resize:vertical; min-height:70px; }
+.fg2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.modal-btns { display:flex; gap:10px; margin-top:20px; }
+.btn-cancel {
+  flex:1; background:transparent; border:1px solid var(--navy-light);
+  color:var(--gray); border-radius:8px; padding:11px;
+  font-family:'Barlow Condensed',sans-serif; font-size:13px;
+  font-weight:600; text-transform:uppercase; cursor:pointer;
+}
+.btn-cancel:hover { border-color:var(--gray); color:var(--white); }
+.btn-save {
+  flex:2; background:linear-gradient(135deg,var(--gold),var(--gold-dim));
+  color:var(--navy); border:none; border-radius:8px; padding:11px;
+  font-family:'Barlow Condensed',sans-serif; font-size:14px;
+  font-weight:700; letter-spacing:1px; text-transform:uppercase; cursor:pointer;
+}
+.btn-save:hover { transform:translateY(-1px); }
+
+.col-header {
+  display:grid;
+  grid-template-columns:28px 1fr 110px 100px 90px 110px 100px;
+  gap:8px; padding:6px 12px;
+  font-family:'Barlow Condensed',sans-serif; font-size:10px;
+  color:var(--gray); letter-spacing:1px; text-transform:uppercase;
+  border-bottom:1px solid var(--navy-light); margin-bottom:6px;
+}
+
+.empty { text-align:center; padding:40px; color:var(--gray); font-size:14px; }
+
+@media(max-width:900px) {
+  .stats { grid-template-columns:repeat(2,1fr); }
+  .task-row { grid-template-columns:28px 1fr 90px 80px; }
+  .task-row > *:nth-child(n+6) { display:none; }
+  .col-header > *:nth-child(n+6) { display:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">🎯 Big Al's Command Center</div>
+    <div class="logo-sub">Big Al's Barefoot Bay · Melaleuca · Family</div>
+  </div>
+  <div class="header-right">
+    <button class="btn-add-header" onclick="openModal()">+ Add Task</button>
+  </div>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="controls">
+  <div class="filter-group" id="bizFilters">
+    <button class="fbtn active" onclick="setFilter('biz','all',this)">All</button>
+    <button class="fbtn" onclick="setFilter('biz','bigals',this)">Big Al's</button>
+    <button class="fbtn" onclick="setFilter('biz','melaleuca',this)">Melaleuca</button>
+    <button class="fbtn" onclick="setFilter('biz','family',this)">Family</button>
+  </div>
+  <div class="filter-group" id="timeFilters">
+    <button class="fbtn active" onclick="setFilter('time','all',this)">All</button>
+    <button class="fbtn" onclick="setFilter('time','overdue',this)">🔴 Overdue</button>
+    <button class="fbtn" onclick="setFilter('time','today',this)">🟡 Today</button>
+    <button class="fbtn" onclick="setFilter('time','week',this)">This Week</button>
+  </div>
+  <div class="filter-group" id="statusFilters">
+    <button class="fbtn active" onclick="setFilter('status','all',this)">All Status</button>
+    <button class="fbtn" onclick="setFilter('status','not-started',this)">Not Started</button>
+    <button class="fbtn" onclick="setFilter('status','in-progress',this)">In Progress</button>
+    <button class="fbtn" onclick="setFilter('status','complete',this)">Complete</button>
+  </div>
+  <input type="text" class="search" placeholder="🔍 Search tasks..." oninput="render();" id="searchBox">
+</div>
+
+<div class="task-container" id="taskContainer"></div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">➕ New Task</h3>
+    <div class="fg"><label>Task Name *</label><input type="text" id="fName" placeholder="What needs to be done?"></div>
+    <div class="fg2">
+      <div class="fg"><label>Business</label>
+        <select id="fBiz">
+          <option value="bigals">Big Al's Barefoot Bay</option>
+          <option value="melaleuca">Melaleuca</option>
+          <option value="both">Both</option>
+          <option value="family">Family</option>
+        </select>
+      </div>
+      <div class="fg"><label>Owner</label>
+        <select id="fOwner">
+          <option>Big Al</option><option>Sondra</option><option>Shelby</option>
+          <option>Corey</option><option>Hope</option><option>Rachel</option>
+          <option>Emily</option><option>Haven</option><option>James I</option><option>James W</option>
+        </select>
+      </div>
+      <div class="fg"><label>Priority</label>
+        <select id="fPriority">
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="medium" selected>Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <div class="fg"><label>Status</label>
+        <select id="fStatus">
+          <option value="not-started">Not Started</option>
+          <option value="in-progress">In Progress</option>
+          <option value="complete">Complete</option>
+          <option value="on-hold">On Hold</option>
+        </select>
+      </div>
+      <div class="fg"><label>Due Date</label><input type="date" id="fDue"></div>
+    </div>
+    <div class="fg"><label>Notes</label><textarea id="fNotes" placeholder="Additional details..."></textarea></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveTask()">Save Task ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const DEFAULT_TASKS = [
+  // FAZ
+  {id:1,name:"FAZ website pages - contact Keith",biz:"bigals",owner:"Big Al",priority:"critical",status:"in-progress",due:"2026-05-15",notes:"Keith handles FAZ page + standalone FAZ site",done:false},
+  {id:2,name:"FAZ online registration setup",biz:"bigals",owner:"Big Al",priority:"critical",status:"not-started",due:"2026-05-15",notes:"Must be live before May 15 opening",done:false},
+  {id:3,name:"FAZ WiFi install - Joey Hamm",biz:"bigals",owner:"Big Al",priority:"critical",status:"not-started",due:"2026-05-15",notes:"Contact Joey Hamm for WiFi install at FAZ",done:false},
+  {id:4,name:"FAZ QR codes",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-05-15",notes:"QR codes for digital waiver and registration",done:false},
+  {id:5,name:"FAZ wristbands",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-05-15",notes:"Wristband rotation system",done:false},
+  {id:6,name:"FAZ iPads",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-05-15",notes:"iPads for check-in and waivers",done:false},
+  {id:7,name:"FAZ liability insurance policy",biz:"bigals",owner:"Big Al",priority:"critical",status:"not-started",due:"2026-05-14",notes:"FAZ liability insurance needed before opening May 15",done:false},
+  {id:8,name:"FAZ logo sign - Daniel Lasher",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-05-14",notes:"48in x 24in logo sign. Contact Daniel Lasher.",done:false},
+  {id:9,name:"FAZ LIFEGUARD sign - center cabana",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-05-14",notes:"LIFEGUARD sign for center cabana",done:false},
+  {id:10,name:"FAZ entrance signs x2",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-05-14",notes:"2 entrance signs needed",done:false},
+  {id:11,name:"Lifeguard equipment + waterfront rescue board",biz:"bigals",owner:"Big Al",priority:"critical",status:"not-started",due:"2026-05-15",notes:"All lifeguard equipment needed before FAZ opens",done:false},
+  // Memorial Day
+  {id:12,name:"Memorial Day grand opening - finalize program",biz:"bigals",owner:"Emily",priority:"critical",status:"in-progress",due:"2026-05-21",notes:"May 21-25. Concert 3-9pm Sat May 23. Callie Howard, Coby Wynn & Eastern Pines, Chace Raines & the Wrest",done:false},
+  {id:13,name:"Memorial Day crawfish cookoff coordination",biz:"bigals",owner:"Rachel",priority:"high",status:"in-progress",due:"2026-05-21",notes:"Biggest crawfish cookoff Pittsburg has ever seen",done:false},
+  {id:14,name:"Memorial Day flag ceremony - Rusty Wallace",biz:"bigals",owner:"Emily",priority:"high",status:"not-started",due:"2026-05-25",notes:"May 25 led by U.S. Army E-5 5GT Rusty Wallace. Red poppies.",done:false},
+  {id:15,name:"LED screen advertising - collect sponsor materials",biz:"bigals",owner:"Shelby",priority:"critical",status:"in-progress",due:"2026-05-07",notes:"Shoutout $150, Feature $500, Presenting $1500. Call 682-283-8025 ask for Shelby",done:false},
+  // Advertising
+  {id:16,name:"Shelby outreach - 30 local businesses",biz:"bigals",owner:"Shelby",priority:"critical",status:"in-progress",due:"2026-05-15",notes:"3 tiers: Anchor $125/mo, Baymate $275/mo, Flagship $500/mo",done:false},
+  {id:17,name:"Advertising partner media kit distribution",biz:"bigals",owner:"Corey",priority:"high",status:"in-progress",due:"2026-05-15",notes:"15-page master media kit + Memorial Day sell sheet completed",done:false},
+  // Insurance
+  {id:18,name:"FROST Insurance - property policy inspection",biz:"bigals",owner:"Big Al",priority:"critical",status:"not-started",due:"2026-05-31",notes:"Property policy inspection needed. Check IPFS payments.",done:false},
+  {id:19,name:"IPFS monthly payment - due 3rd of month",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-06-03",notes:"Monthly payments due 3rd of each month through Dec 2026",done:false},
+  {id:20,name:"Kinsale premium audit compliance",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-05-31",notes:"Kinsale premium audit compliance check",done:false},
+  {id:21,name:"Castaways liability insurance - new policy",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-05-31",notes:"New Castaways Bar & Grill liability policy needed",done:false},
+  // Tax & Compliance
+  {id:22,name:"Texas Franchise Tax Annual Report",biz:"bigals",owner:"Big Al",priority:"critical",status:"not-started",due:"2026-05-01",notes:"Due 5/15/2026, file by 5/1/2026",done:false},
+  {id:23,name:"TABC AIMS 2026 Compliance",biz:"bigals",owner:"Big Al",priority:"critical",status:"not-started",due:"2026-05-30",notes:"Due 6/30/2026, submit by 5/30/2026 to communications@tabc.texas.gov",done:false},
+  {id:24,name:"BPP Rendition - Camp Central Appraisal District",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-05-15",notes:"ARP 2 LLC accounts 13531, 18081, 17101. Jan Tinsley - Chief Appraiser",done:false},
+  {id:25,name:"Property tax fight - Gill Denson & Company",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-05-31",notes:"Richie Gill - Gill, Denson & Company. Top candidate for property tax consulting.",done:false},
+  // Operations
+  {id:26,name:"Gate access install - Kevin 903.366.2805",biz:"bigals",owner:"James I",priority:"high",status:"in-progress",due:"2026-05-15",notes:"EMX TRES-400-DEFENDER-B/K + RemotePro KP 12-000 keypad. Hardware from Arturo.",done:false},
+  {id:27,name:"Employee handbook + lifeguard supplement",biz:"bigals",owner:"Big Al",priority:"high",status:"in-progress",due:"2026-04-30",notes:"Employee handbook + Lifeguard supplement book",done:false},
+  // Landscaping
+  {id:28,name:"Landscaping - Brannon Tucker tree plan",biz:"bigals",owner:"Big Al",priority:"high",status:"in-progress",due:"2026-04-30",notes:"Tree list and planting plan for 25-50 new trees with drip irrigation",done:false},
+  {id:29,name:"Landscaping - Cypress Custom Stone materials",biz:"bigals",owner:"Big Al",priority:"high",status:"in-progress",due:"2026-04-30",notes:"Dawson Masingale 903.335.2031. Rainbow stone $275/yd, Mulch $50/yd",done:false},
+  {id:30,name:"Tree wholesaler - order trees",biz:"bigals",owner:"Big Al",priority:"high",status:"not-started",due:"2026-04-30",notes:"Shortlist: Saddle Creek, Trees USA, Athens Tree Farm",done:false},
+  // Clubhouse
+  {id:31,name:"Clubhouse furniture setup",biz:"bigals",owner:"Big Al",priority:"medium",status:"not-started",due:"2026-04-30",notes:"Navy and gold. Budget $2,500-$5,000. Neon Office Open sign needed.",done:false},
+  {id:32,name:"Clubhouse computers - 3 units",biz:"bigals",owner:"Big Al",priority:"medium",status:"not-started",due:"2026-04-30",notes:"Two new computers + third for Big Al",done:false},
+  // Purchases
+  {id:33,name:"Picnic tables - 16 from HS welding class",biz:"bigals",owner:"Big Al",priority:"medium",status:"not-started",due:"2026-05-21",notes:"16 picnic tables + umbrellas",done:false},
+  {id:34,name:"Shade structures - smoking area, FAZ, dog park",biz:"bigals",owner:"Big Al",priority:"medium",status:"not-started",due:"2026-05-15",notes:"Shade structures for all 3 areas",done:false},
+  {id:35,name:"SUP boards - Overton's wholesale",biz:"bigals",owner:"Big Al",priority:"medium",status:"not-started",due:"2026-05-15",notes:"O'Brien Hilo LTD SUP package ~$1,596 for 4 boards",done:false},
+  {id:36,name:"Life-size chess set",biz:"bigals",owner:"Big Al",priority:"low",status:"not-started",due:"2026-06-01",notes:"Life-size chess set for resort grounds",done:false},
+  {id:37,name:"Parking delineator posts - Uline",biz:"bigals",owner:"Big Al",priority:"low",status:"not-started",due:"2026-06-01",notes:"Parking delineator posts from Uline",done:false},
+  {id:38,name:"Dog park benches",biz:"bigals",owner:"Big Al",priority:"low",status:"not-started",due:"2026-06-01",notes:"Benches for dog park",done:false},
+  // Melaleuca
+  {id:39,name:"Enroll 4 personal customers this month",biz:"melaleuca",owner:"Big Al",priority:"critical",status:"in-progress",due:"2026-05-31",notes:"Monthly goal: 4 personal customer enrollments",done:false},
+  {id:40,name:"Jay - path to Director",biz:"melaleuca",owner:"Big Al",priority:"high",status:"in-progress",due:"2026-05-31",notes:"Work Jay toward Director status",done:false},
+  {id:41,name:"Sondra - 15 points for her business",biz:"melaleuca",owner:"Sondra",priority:"high",status:"in-progress",due:"2026-05-31",notes:"Sondra needs 15 points",done:false},
+  {id:42,name:"Jack & Nancy - enroll 6 for leadership points",biz:"melaleuca",owner:"Big Al",priority:"high",status:"in-progress",due:"2026-05-31",notes:"Nancy has ~50 pts, upbeat. Enroll 6 for leadership points.",done:false},
+  {id:43,name:"LinkedIn Dripify Pro campaign",biz:"melaleuca",owner:"Big Al",priority:"high",status:"in-progress",due:"2026-05-31",notes:"7-phase AI-driven lead generation via LinkedIn data mining",done:false},
+  {id:44,name:"Kevin - convention speaking opportunity",biz:"melaleuca",owner:"Big Al",priority:"medium",status:"not-started",due:"2026-06-30",notes:"Kevin convention speaking opportunity",done:false},
+  {id:45,name:"Catherine's Leads + Great Patriot Store follow up",biz:"melaleuca",owner:"Big Al",priority:"medium",status:"in-progress",due:"2026-05-31",notes:"Follow up on Catherine's Leads and Great Patriot Store Leads",done:false},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let tasks = [];
+let filters = { biz:'all', time:'all', status:'all' };
+let editId = null;
+let nextId = 46;
+
+function load() {
+  const saved = localStorage.getItem('bigals_tasks_v2');
+  tasks = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_TASKS));
+  nextId = tasks.length ? Math.max(...tasks.map(t=>t.id)) + 1 : 46;
+}
+function save() { localStorage.setItem('bigals_tasks_v2', JSON.stringify(tasks)); }
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function setFilter(type, val, btn) {
+  filters[type] = val;
+  const groupId = type==='biz'?'bizFilters':type==='time'?'timeFilters':'statusFilters';
+  document.querySelectorAll(`#${groupId} .fbtn`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function getFiltered() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const weekEnd = new Date(today); weekEnd.setDate(weekEnd.getDate()+7);
+  const q = document.getElementById('searchBox')?.value.toLowerCase()||'';
+  return tasks.filter(t => {
+    if(filters.biz!=='all' && t.biz!==filters.biz) return false;
+    if(filters.status!=='all' && t.status!==filters.status) return false;
+    if(filters.time!=='all') {
+      if(!t.due) return filters.time==='all';
+      const d = new Date(t.due+'T00:00:00');
+      if(filters.time==='overdue' && !(d<today && t.status!=='complete')) return false;
+      if(filters.time==='today' && !(d.getTime()===today.getTime())) return false;
+      if(filters.time==='week' && !(d>=today && d<=weekEnd)) return false;
+    }
+    if(q && !t.name.toLowerCase().includes(q) && !t.notes.toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function render() {
+  renderStats();
+  renderTasks();
+}
+
+function renderStats() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const total = tasks.length;
+  const overdue = tasks.filter(t=>t.due&&new Date(t.due+'T00:00:00')<today&&t.status!=='complete').length;
+  const inprog = tasks.filter(t=>t.status==='in-progress').length;
+  const complete = tasks.filter(t=>t.status==='complete').length;
+  const critical = tasks.filter(t=>t.priority==='critical'&&t.status!=='complete').length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="stat-icon">📋</div><div><div class="stat-num">${total}</div><div class="stat-label">Total Tasks</div></div></div>
+    <div class="stat"><div class="stat-icon">🔥</div><div><div class="stat-num" style="color:#e74c3c">${overdue}</div><div class="stat-label">Overdue</div></div></div>
+    <div class="stat"><div class="stat-icon">⚡</div><div><div class="stat-num" style="color:#f39c12">${inprog}</div><div class="stat-label">In Progress</div></div></div>
+    <div class="stat"><div class="stat-icon">✅</div><div><div class="stat-num" style="color:#2ecc71">${complete}</div><div class="stat-label">Complete</div></div></div>
+    <div class="stat"><div class="stat-icon">🚨</div><div><div class="stat-num" style="color:#e74c3c">${critical}</div><div class="stat-label">Critical</div></div></div>
+  `;
+}
+
+function renderTasks() {
+  const filtered = getFiltered();
+  const container = document.getElementById('taskContainer');
+  if(!filtered.length) { container.innerHTML='<div class="empty">No tasks found.</div>'; return; }
+
+  // Group by business
+  const groups = {};
+  filtered.forEach(t => {
+    const g = t.biz==='melaleuca'?'🌿 Melaleuca':t.biz==='family'?'👨‍👩‍👧 Family':"🏖️ Big Al's Barefoot Bay";
+    if(!groups[g]) groups[g]=[];
+    groups[g].push(t);
+  });
+
+  let html = `<div class="col-header">
+    <div></div><div>Task</div><div>Status</div><div>Priority</div>
+    <div>Owner</div><div>Due Date</div><div>Business</div>
+  </div>`;
+
+  for(const [group, gtasks] of Object.entries(groups)) {
+    html += `<div class="section-header">${group} <span style="color:var(--gray);font-size:10px">(${gtasks.length})</span></div>`;
+    gtasks.forEach(t => {
+      const due = formatDue(t.due);
+      const statusBadge = `<span class="badge b-${t.status}">${t.status.replace('-',' ')}</span>`;
+      const priorityBadge = `<span class="badge b-${t.priority}">${t.priority}</span>`;
+      const bizBadge = `<span class="badge b-${t.biz}">${t.biz==='bigals'?"Big Al's":t.biz==='melaleuca'?'Melaleuca':'Family'}</span>`;
+      html += `<div class="task-row ${t.status==='complete'?'completed':''}" data-id="${t.id}">
+        <div class="cb-wrap"><input type="checkbox" class="cb" ${t.status==='complete'?'checked':''} onchange="toggleDone(${t.id},this)" onclick="event.stopPropagation()"></div>
+        <div>
+          <div class="task-name">${t.name}</div>
+          ${t.notes?`<div class="task-notes">${t.notes.substring(0,80)}${t.notes.length>80?'...':''}</div>`:''}
+        </div>
+        <div>${statusBadge}</div>
+        <div>${priorityBadge}</div>
+        <div class="owner-badge">${t.owner}</div>
+        <div>${due}</div>
+        <div>${bizBadge}</div>
+      </div>`;
+    });
+  }
+  container.innerHTML = html;
+
+  // Click row to edit
+  document.querySelectorAll('.task-row').forEach(row => {
+    row.addEventListener('click', e => {
+      if(e.target.classList.contains('cb')) return;
+      openModal(parseInt(row.dataset.id));
+    });
+  });
+}
+
+function formatDue(due) {
+  if(!due) return '<span class="due">—</span>';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(due+'T00:00:00');
+  const diff = Math.floor((d-today)/86400000);
+  const label = d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  if(diff<0) return `<span class="due due-overdue">⚠ ${label}</span>`;
+  if(diff===0) return `<span class="due due-today">TODAY</span>`;
+  if(diff<=7) return `<span class="due due-soon">${label}</span>`;
+  return `<span class="due">${label}</span>`;
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────────
+function toggleDone(id, cb) {
+  const t = tasks.find(t=>t.id===id);
+  if(!t) return;
+  t.status = cb.checked ? 'complete' : 'not-started';
+  t.done = cb.checked;
+  save(); render();
+}
+
+function openModal(id=null) {
+  editId = id;
+  const modal = document.getElementById('overlay');
+  document.getElementById('modalTitle').textContent = id ? '✏️ Edit Task' : '➕ New Task';
+  if(id) {
+    const t = tasks.find(t=>t.id===id);
+    if(!t) return;
+    document.getElementById('fName').value = t.name;
+    document.getElementById('fBiz').value = t.biz;
+    document.getElementById('fOwner').value = t.owner;
+    document.getElementById('fPriority').value = t.priority;
+    document.getElementById('fStatus').value = t.status;
+    document.getElementById('fDue').value = t.due||'';
+    document.getElementById('fNotes').value = t.notes||'';
+  } else {
+    document.getElementById('fName').value='';
+    document.getElementById('fBiz').value='bigals';
+    document.getElementById('fOwner').value='Big Al';
+    document.getElementById('fPriority').value='medium';
+    document.getElementById('fStatus').value='not-started';
+    document.getElementById('fDue').value='';
+    document.getElementById('fNotes').value='';
+  }
+  modal.classList.add('active');
+  setTimeout(()=>document.getElementById('fName').focus(),100);
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('active'); editId=null; }
+
+function saveTask() {
+  const name = document.getElementById('fName').value.trim();
+  if(!name) { alert('Task name is required'); return; }
+  if(editId) {
+    const t = tasks.find(t=>t.id===editId);
+    if(t) {
+      t.name=name; t.biz=document.getElementById('fBiz').value;
+      t.owner=document.getElementById('fOwner').value;
+      t.priority=document.getElementById('fPriority').value;
+      t.status=document.getElementById('fStatus').value;
+      t.due=document.getElementById('fDue').value;
+      t.notes=document.getElementById('fNotes').value.trim();
+      t.done=t.status==='complete';
+    }
+  } else {
+    tasks.push({
+      id:nextId++,
+      name, biz:document.getElementById('fBiz').value,
+      owner:document.getElementById('fOwner').value,
+      priority:document.getElementById('fPriority').value,
+      status:document.getElementById('fStatus').value,
+      due:document.getElementById('fDue').value,
+      notes:document.getElementById('fNotes').value.trim(),
+      done:false
+    });
+  }
+  save(); closeModal(); render();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape') closeModal();
+  if(e.ctrlKey && e.key==='n') { e.preventDefault(); openModal(); }
+});
+document.getElementById('overlay').addEventListener('click', e => {
+  if(e.target===document.getElementById('overlay')) closeModal();
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+load(); render();
+</script>
+</body>
+</html>
